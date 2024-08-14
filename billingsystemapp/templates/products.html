@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+    {% load static %}
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +80,11 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
+            <div class="company_logo">
+                <img src={% static "smartstore.png" %} style="height:40px; width:40px;">
+                &nbsp;
+                &nbsp;
+            </div>
             <a id="logo" class="navbar-brand" href="{% url 'billing' %}">Billingsystem</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -151,10 +158,10 @@
 
         <form action="{% url 'update_discounts' %}" method="POST" class="mb-4">
             {% csrf_token %}
-            <button type="submit" class="btn btn-outline-primary my-2 my-sm-0">Update Discounts</button>
+            <a href="{% url 'filter_products' 'all' %}" class="btn btn-outline-primary my-2 my-sm-0">All Products</a>
             <a href="{% url 'filter_products' 'new' %}" class="btn btn-outline-primary my-2 my-sm-0">New Stock</a>
             <a href="{% url 'filter_products' 'old' %}" class="btn btn-outline-primary my-2 my-sm-0">Old Stock</a>
-            <a href="{% url 'filter_products' 'all' %}" class="btn btn-outline-primary my-2 my-sm-0">All Products</a>
+            <button type="submit" class="btn btn-outline-primary my-2 my-sm-0">Update Discounts</button>
         </form>
 
         <!-- Table of Products -->

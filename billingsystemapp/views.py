@@ -89,7 +89,7 @@ def billing(request):
                     'msg': f'{product.product_name} is out of stock.',
                     'products': Product.objects.all(),
                     'cart': cart,
-                    'total_price' : round_to_two_decimal_places(sum(item['discounted_price'] * item['quantity'] for item in cart.values()))
+                    'total_price': round_to_two_decimal_places(sum(item['discounted_price'] * item['quantity'] for item in cart.values())),
                 })
 
             try:
@@ -104,7 +104,7 @@ def billing(request):
                         'msg': f'Quantity requested for {product.product_name} exceeds stock available ({product.quantity}).',
                         'products': Product.objects.all(),
                         'cart': cart,
-                        'total_price' : round_to_two_decimal_places(sum(item['discounted_price'] * item['quantity'] for item in cart.values()))
+                        'total_price': round_to_two_decimal_places(sum(item['discounted_price'] * item['quantity'] for item in cart.values())),
                     })
 
                 discounted_price = round_to_two_decimal_places(float(product.price) * (1 - (float(product.discount) / 100)))
@@ -199,7 +199,7 @@ def billing(request):
     return render(request, 'billing.html', {
         'products': Product.objects.all(),
         'cart': cart,
-        'total_price': total_price,
+        'total_price': round_to_two_decimal_places(total_price),
     })
 
 
@@ -224,7 +224,7 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
     Left_style = ParagraphStyle(name='LeftStyle', alignment=0, leftIndent=.01)
     details_style = ParagraphStyle(name='DetailsStyle', fontSize=12, alignment=0)
 
-    logo_path = r"C:\Users\acer\Desktop\project(mysql)\myenv\Scripts\billingsystemproject\billingsystemapp\templates\static\smartstore.png"# Adjust path as per your project structure
+    logo_path = r"C:\Users\acer\Desktop\project(mysql)\env\Scripts\billingsystemproject\billingsystemapp\static\smartstore.png"# Adjust path as per your project structure
     logo_width = 130  # Adjust the width as needed
     logo_height = 80
     logo = Image(logo_path, width=logo_width, height=logo_height)
@@ -241,7 +241,7 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
         fontSize=20,  # Increase font size
         alignment=1,  # Center alignment
         textColor=colors.HexColor('#0b55f6'),   # Set the color for the text #1d2b64
-        fontName='Helvetica-Bold' 
+        fontName='Helvetica-Bold'
     )
 
 
@@ -473,12 +473,12 @@ def product_list(request):
     products = Product.objects.all()
 
     # Calculate cutoff date for new stock
-    six_months_ago = now - timezone.timedelta(days=6*30)  # Approximate 6 months
+    six_months_ago = date.today() - timedelta(days=6*30)  # Approximate 6 months # Approximate 6 months
 
     # Pass products and cutoff date to template
     return render(request, 'products.html', {
         'products': products,
-        'six_months_ago': six_months_ago,
+        'sixmonths': six_months_ago,
     })
 
 def product_search(request):
@@ -563,15 +563,17 @@ def user_delete(request, user_name):
     return render(request, 'user_delete.html', {'user': user})
 
 def search_products(request):
+    six_months_ago = date.today() - timedelta(days=6*30)
     query = request.GET.get('q', '')
     if query:
         products = Product.objects.filter(product_name__icontains=query)
     else:
         products = Product.objects.all()
     
-    return render(request, 'products.html', {'products': products, 'query': query})
+    return render(request, 'products.html', {'products': products, 'query': query,'sixmonths': six_months_ago})
 
 def products_search_by_category(request):
+    six_months_ago = date.today() - timedelta(days=6*30)
     category_query = request.GET.get('category')
     products = []
 
@@ -584,7 +586,7 @@ def products_search_by_category(request):
     else:
         products = Product.objects.all()
         
-    return render(request, 'products.html', {'products': products, 'category_query': category_query})
+    return render(request, 'products.html', {'products': products, 'category_query': category_query,'sixmonths': six_months_ago})
 
 @require_POST
 def update_discounts_view(request):
@@ -689,6 +691,57 @@ def product_stock_view(request):
 
     return render(request, 'product_stock.html', context)
 
+def search_stock(request):
+    query = request.GET.get('q', '')
+    
+    # Filter products based on the search query
+    if query:
+        products = Product.objects.filter(product_name__icontains=query)
+    else:
+        products = Product.objects.all()
+
+    product_details = []
+    total_unsold_products = 0
+    total_sold_products = 0
+    total_stock = 0
+
+    for product in products:
+        try:
+            stock_item = stock.objects.get(product_name=product)
+            products_sold = stock_item.stock - product.quantity  # Updated calculation
+            
+            stock_type = 'New Stock' if product.manufacturingdate and product.manufacturingdate > timezone.now().date() - timedelta(days=180) else 'Old Stock'
+            
+            # Update totals
+            total_unsold_products += product.quantity
+            total_sold_products += products_sold
+            total_stock += stock_item.stock
+
+            product_details.append({
+                'product': product,
+                'stock': stock_item,
+                'products_sold': products_sold,
+                'stock_type': stock_type,
+            })
+
+        except stock.DoesNotExist:
+            # Handle the case where no stock item exists for the product
+            product_details.append({
+                'product': product,
+                'stock': None,  # No stock information available
+                'products_sold': None,  # No products sold information available
+                'stock_type': 'Unknown',  # Or any default value you prefer
+            })
+
+    context = {
+        'product_details': product_details,
+        'total_unsold_products': total_unsold_products,
+        'total_sold_products': total_sold_products,
+        'total_stock': total_stock,
+        'query': query,  # Pass the search query back to the template
+    }
+
+    return render(request, 'product_stock.html', context)
 
 def profit_loss_view(request):
     billings = Billing.objects.select_related('product_id')

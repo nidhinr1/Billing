@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 {% load custom_filters %}
 <head>
     <meta charset="UTF-8">
@@ -75,6 +76,11 @@
     <div class="nav">
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
+                <div class="company_logo">
+                    <img src={% static "smartstore.png" %} style="height:40px; width:40px;">
+                    &nbsp;
+                    &nbsp;
+                </div>
                 <a id="logo" class="navbar-brand" href="{% url 'billing' %}">Billingsystem</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>

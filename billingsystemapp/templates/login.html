@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,9 +84,15 @@
             border-color: #4CAF50;
             box-shadow: 0 0 8px 0 #4CAF50;
         }
+        img{
+            text-align:center;
+            height:150px;
+            widht:150px;
+        }
     </style>
 </head>
 <body>
+    <img src={% static "smartstore.png" %}>
     <div class="title center">Billing-System</div>
     <div class="login-box">
         <h2>Login</h2>

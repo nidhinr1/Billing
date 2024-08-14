@@ -41,7 +41,6 @@ class Product(models.Model):
                     15: 8.00,
                     16: 12.00,
                     17: 7.00,
-                    18: 2.00,
                 }
                 starting_discount = starting_discounts.get(self.category_id, 0.00)
 
