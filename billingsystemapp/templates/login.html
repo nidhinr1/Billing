@@ -9,7 +9,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1d2b64;
+            background-color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,7 +22,7 @@
             font-size: 75px;
             margin-bottom: 20px;
             font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-            color: #ffffff;
+            color: #1d2b64;
             position: relative;
             top: 0;
             left: 0;
@@ -31,7 +31,7 @@
         .login-box {
             width: 350px;
             padding: 40px;
-            background-color: #fff;
+            background-color: #1d2b64;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             border-radius: 10px;
             text-align: center;
@@ -63,8 +63,8 @@
             padding: 12px 20px;
             border: none;
             border-radius: 25px;
-            background-color: #1d2b64;
-            color: #fff;
+            background-color: #fff;
+            color: #1d2b64;
             cursor: pointer;
             font-size: 18px;
         }
@@ -95,7 +95,7 @@
     <img src={% static "smartstore.png" %}>
     <div class="title center">Billing-System</div>
     <div class="login-box">
-        <h2>Login</h2>
+        <h2 style="color:white;">Login</h2>
         <div class="messages">
             {% for message in messages %}
                 <div class="{{ message.tags }}">{{ message }}</div>

@@ -1,9 +1,13 @@
 from django.db import models,IntegrityError
 import uuid
 from datetime import date,timedelta
+from decimal import Decimal
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    
+    starting_discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)  # Add this line
+
     def __str__(self):
         return self.name
 
@@ -23,38 +27,29 @@ class Product(models.Model):
 
     def update_discount(self):
         if self.manufacturingdate:
-        # Calculate the number of months since the manufacturing date
             months_old = (date.today().year - self.manufacturingdate.year) * 12 + date.today().month - self.manufacturingdate.month
 
-        # If the product is within the first 6 months, set discount to 0
             if months_old < 6:
-                self.discount = 0.00
+                self.discount = Decimal('0.00')
             else:
-            # Calculate six-month periods
                 six_month_periods = (months_old - 6) // 6
 
-            # Define starting discounts based on category
-                starting_discounts = {
-                    12: 5.00,  # Example category ID mappings
-                    13: 10.00,
-                    14: 15.00,
-                    15: 8.00,
-                    16: 12.00,
-                    17: 7.00,
-                }
-                starting_discount = starting_discounts.get(self.category_id, 0.00)
+                # Get the starting discount from the category
+                starting_discount = Decimal(self.category.starting_discount)  # Ensure it's a Decimal
 
-            # Calculate total discount with increment
-                total_discount = starting_discount + (six_month_periods * 5.00)
+                # Define the increment per six-month period
+                increment = Decimal('5.00')
+
+                # Calculate the total discount
+                total_discount = starting_discount + (six_month_periods * increment)
             
-            # Ensure total discount does not exceed 90%
-                if total_discount > 90.00:
-                    total_discount = 90.00
+                # Ensure the total discount does not exceed 90%
+                if total_discount > Decimal('90.00'):
+                    total_discount = Decimal('90.00')
 
                 self.discount = total_discount
         
             self.save()
-
 
 
 class Sales(models.Model):

@@ -19,13 +19,17 @@ from django.views.decorators.http import require_POST
 from django.db import IntegrityError
 
 def addcategory(request):
-    if request.method =='POST':
-        category=request.POST['category']
-        q=Category(name=category)
-        q.save()
-        return render(request,'addcategory.html',{'msg':'Category submitted'})
+    if request.method == 'POST':
+        category_name = request.POST['category']
+        starting_discount = request.POST.get('starting_discount', 0.00)  # Default to 0.00 if not provided
+
+        # Create and save the new category
+        category = Category(name=category_name, starting_discount=starting_discount)
+        category.save()
+        return render(request, 'addcategory.html', {'msg': 'Category submitted'})
     else:
-        return render(request,'addcategory.html')
+        return render(request, 'addcategory.html')
+
     
 def adduser(request):
     if request.method =='POST':
@@ -233,14 +237,14 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
         name='CompanyTitle',
         fontSize=32,  # Increase font size
         alignment=1,  # Center alignment
-        textColor=colors.HexColor('#0b55f6'),   # Set the color for the text #1d2b64
+        textColor=colors.HexColor('#42A2D0'),   # Set the color for the text #1d2b64
         fontName='Helvetica-Bold' 
     )
     invoice_title_style = ParagraphStyle(
         name='InvoiceTitle',
         fontSize=20,  # Increase font size
         alignment=1,  # Center alignment
-        textColor=colors.HexColor('#0b55f6'),   # Set the color for the text #1d2b64
+        textColor=colors.HexColor('#42A2D0'),   # Set the color for the text #1d2b64
         fontName='Helvetica-Bold'
     )
 
@@ -540,7 +544,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('billing')
+            return redirect('product')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')
