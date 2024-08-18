@@ -106,7 +106,7 @@
                             <a class="nav-link {% if request.path == '/product_stock/' %}active{% endif %}" href="{% url 'product_stock' %}">Stocks</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/profit_loss/' %}active{% endif %}" href="{% url 'profit_loss' %}">Profit/Loss</a>
+                            <a class="nav-link {% if request.path == '/profit_loss/' %}active{% endif %}" href="{% url 'profit_loss_today' %}">Profit/Loss</a>
                         </li>
                     {% endif %}
                     <li class="nav-item">
@@ -132,7 +132,7 @@
     </nav>
 
     <div class="container mt-5">
-        <h1 class="mb-4">Profit or Loss Analysis</h1>
+        <h1 class="mb-4">Profit or Loss Analysis : {{msg}}</h1>
 
         <div class="d-flex mb-4">
             <form method="post" action="{% url 'profit_loss_today' %}">
@@ -142,6 +142,18 @@
             <form method="post" action="{% url 'profit_loss' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary mr-2">All Profit/Loss</button>
+            </form>
+            <form method="post" action="{% url 'profit_loss_week' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary mr-2">Week's Profit/loss</button>
+            </form>
+            <form method="post" action="{% url 'profit_loss_month' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary mr-2">Month's Profit/Loss</button>
+            </form>
+            <form method="post" action="{% url 'profit_loss_year' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary mr-2">Year's Profit/Loss</button>
             </form>
         </div>
 

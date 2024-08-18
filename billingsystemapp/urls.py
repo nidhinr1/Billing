@@ -25,5 +25,8 @@ urlpatterns = [
     path('product_stock/', views.product_stock_view, name='product_stock'),
     path('profit_loss/', views.profit_loss_view, name='profit_loss'),
     path('profit_loss_today/', views.profit_loss_today, name='profit_loss_today'),
+    path('profit_loss_month/', views.profit_loss_month, name='profit_loss_month'),
+    path('profit_loss_week/', views.profit_loss_week, name='profit_loss_week'),
+    path('profit_loss_year/', views.profit_loss_year, name='profit_loss_year'),
     path('search_stock/', views.search_stock, name='search_stock'),
 ]

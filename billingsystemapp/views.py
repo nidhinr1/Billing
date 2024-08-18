@@ -120,7 +120,8 @@ def billing(request):
                         'name': product.product_name,
                         'original_price': round_to_two_decimal_places(float(product.price)),
                         'discounted_price': round_to_two_decimal_places(discounted_price),
-                        'quantity': quantity
+                        'quantity': quantity,
+                        'discount':round(product.discount)
                     }
                 request.session['cart'] = cart
             except (ValueError, Product.DoesNotExist):
@@ -228,7 +229,7 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
     Left_style = ParagraphStyle(name='LeftStyle', alignment=0, leftIndent=.01)
     details_style = ParagraphStyle(name='DetailsStyle', fontSize=12, alignment=0)
 
-    logo_path = r"C:\Users\acer\Desktop\project(mysql)\env\Scripts\billingsystemproject\billingsystemapp\static\smartstore.png"# Adjust path as per your project structure
+    logo_path = r"C:\Users\Nithin\Desktop\project(mysql)\env\Scripts\billingsystemproject\billingsystemapp\static\smartstore.png"# Adjust path as per your project structure
     logo_width = 130  # Adjust the width as needed
     logo_height = 80
     logo = Image(logo_path, width=logo_width, height=logo_height)
@@ -334,7 +335,7 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
     elements.append(Spacer(1, 10))
     # Table data
     data = [
-        ["Sr.No","Product Name", "Qty", "Rate(Rs)", "Disc.Rate(Rs)", "Total(Rs)"]
+        ["Sr.No","Product Name", "Qty", "Rate(Rs)","Disc","Disc.Rate(Rs)", "Total(Rs)"]
     ]
 
     serial_number = 1
@@ -347,6 +348,7 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
         item['name'],
         item['quantity'],
         f" {round(item['original_price'], 2)}",
+        f" {item['discount']}%",
         f" {round(item['discounted_price'], 2)}",
         f" {total_price}"
     ])
@@ -357,10 +359,10 @@ def generate_pdf_bill(sale_number, cart, purchasetime, customer_name, payment_me
     final_total = round(subtotal + tax, 2)
 
 # Add rows for Total, Tax, and Final Amount
-    data.append(["", "", f"{total_quantity}", "", "", f" {subtotal}"])
+    data.append(["", "", f"{total_quantity}", "","", "", f" {subtotal}"])
     
 # Create the table with appropriate column widths
-    table = Table(data, colWidths=[0.5 * inch, 3.40 * inch, 0.75 * inch, 1 * inch, 1 * inch, 1 * inch])
+    table = Table(data, colWidths=[0.5 * inch, 3.0 * inch, 0.5 * inch, 1 * inch,0.75 * inch, 1 * inch, 1 * inch])
 
 # Set the table style
     table.setStyle(TableStyle([
@@ -544,7 +546,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('product')
+            return redirect('billing')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')
@@ -751,6 +753,7 @@ def profit_loss_view(request):
     billings = Billing.objects.select_related('product_id')
     total_profit_loss = 0
     profit_loss_details = []
+    msg='Last 6 years'
 
     for billing in billings:
         stock_item = stock.objects.get(product_name=billing.product_id)
@@ -765,7 +768,8 @@ def profit_loss_view(request):
 
     context = {
         'profit_loss_details': profit_loss_details,
-        'profit_loss': total_profit_loss
+        'profit_loss': total_profit_loss,
+        'msg':msg
     }
     
     return render(request, 'profit_loss.html', context)
@@ -776,6 +780,7 @@ def profit_loss_today(request):
     billings = Billing.objects.filter(purchasetime__date=today).select_related('product_id')
     todays_profit_loss = 0
     profit_loss_details = []
+    msg="Today's"
 
     for billing in billings:
         stock_item = stock.objects.get(product_name=billing.product_id)
@@ -790,7 +795,89 @@ def profit_loss_today(request):
 
     context = {
         'profit_loss_details': profit_loss_details,
-        'profit_loss': todays_profit_loss
+        'profit_loss': todays_profit_loss,
+        'msg':msg
+    }
+
+    return render(request, 'profit_loss.html', context)
+
+def profit_loss_week(request):
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    billings = Billing.objects.filter(purchasetime__date__range=[start_of_week, today]).select_related('product_id')
+    weekly_profit_loss = 0
+    profit_loss_details = []
+    msg="This week's"
+
+    for billing in billings:
+        stock_item = stock.objects.get(product_name=billing.product_id)
+        profit_or_loss = (billing.price - stock_item.price) * billing.quantity
+        weekly_profit_loss += profit_or_loss
+        profit_loss_details.append({
+            'product': billing.product_id,
+            'billing_price': billing.price,
+            'stock_price': stock_item.price,
+            'profit_or_loss': profit_or_loss
+        })
+
+    context = {
+        'profit_loss_details': profit_loss_details,
+        'profit_loss': weekly_profit_loss,
+        'msg':msg
+    }
+
+    return render(request, 'profit_loss.html', context)
+
+def profit_loss_month(request):
+    today = datetime.now().date()
+    start_of_month = today.replace(day=1)
+    billings = Billing.objects.filter(purchasetime__date__range=[start_of_month, today]).select_related('product_id')
+    monthly_profit_loss = 0
+    profit_loss_details = []
+    msg="This Months's"
+
+    for billing in billings:
+        stock_item = stock.objects.get(product_name=billing.product_id)
+        profit_or_loss = (billing.price - stock_item.price) * billing.quantity
+        monthly_profit_loss += profit_or_loss
+        profit_loss_details.append({
+            'product': billing.product_id,
+            'billing_price': billing.price,
+            'stock_price': stock_item.price,
+            'profit_or_loss': profit_or_loss
+        })
+
+    context = {
+        'profit_loss_details': profit_loss_details,
+        'profit_loss': monthly_profit_loss,
+        'msg':msg
+    }
+
+    return render(request, 'profit_loss.html', context)
+
+def profit_loss_year(request):
+    today = datetime.now().date()
+    start_of_year = today.replace(month=1, day=1)
+    billings = Billing.objects.filter(purchasetime__date__range=[start_of_year, today]).select_related('product_id')
+    yearly_profit_loss = 0
+    profit_loss_details = []
+    msg="This year's"
+
+    for billing in billings:
+        stock_item = stock.objects.get(product_name=billing.product_id)
+        profit_or_loss = (billing.price - stock_item.price) * billing.quantity
+        yearly_profit_loss += profit_or_loss
+        profit_loss_details.append({
+            'product': billing.product_id,
+            'billing_price': billing.price,
+            'stock_price': stock_item.price,
+            'profit_or_loss': profit_or_loss
+        })
+
+    context = {
+        'profit_loss_details': profit_loss_details,
+        'profit_loss': yearly_profit_loss,
+        'msg':msg
     }
 
     return render(request, 'profit_loss.html', context)
